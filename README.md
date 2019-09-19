@@ -2,17 +2,15 @@
 ## Fall 2019
 ## Project 1: A "data story" on the songs of our times
 
-<img src="figs/title1.jpeg" width="500">
+<img src="figs/emotive.png" width="500">
 
-### [Project Description](doc/)
-This is the first and only *individual* (as opposed to *team*) this semester. 
 
 Term: Fall 2019
 
-+ Projec title: Lorem ipsum dolor sit amet
-+ This project is conducted by [your name]
++ Project title: Most emotive music genres 
++ This project is conducted by Nicole Mbithe
 
-+ Project summary: [a short summary] Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
++ Project summary: I decided to delve into the theme of emotiveness in music to see which genres can be considered having the most happy lines as well as the most grim lines. I also checked which songs have the largest range of sentiment, i.e they have a huge difference between the saddest and happiest lines. Basically the ones that are bound to take you on an emotional rollercoaster
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
@@ -24,5 +22,4 @@ proj/
 ├── figs/
 └── output/
 ```
-
-Please see each subfolder for a README file.
+The final notebook is stored in the root folder as well since it needs to read from and write to the different folders

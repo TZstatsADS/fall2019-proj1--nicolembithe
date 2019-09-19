@@ -1,0 +1,150 @@
+---
+title: "Choosing a genre to listen to based on their emotiveness"
+author: Nicole Mbithe, ncm2144
+output: html_notebook
+---
+
+## Why this topic
+I have recentely been experiencing an array of emotions due to school starting, leaving home and saying goodby to people, seeing my school friends again. As a result, I am very susceptible to the level of emotions in the music i listen to. 
+
+I wanted to see if there is a way to determine which genre of songs will keep me at a constant mood(whether happy or sad) and which songs will take me on even more of an emotional rollercoaster. 
+
+###  Step 1: Loading all the necessary files to create Data Story
+
+This notebook runs R in python using reticulate, so we need to install reticulate first. Then we install all the necessary python packages for the assignment
+```{r echo=TRUE}
+#install necessary packages for report
+library(reticulate)
+py_install("nltk")
+py_install("pandas")
+py_install("wordcloud")
+```
+
+Note: the other installations are not shown on this page
+```{python include=FALSE}
+#import all python libraries used in report
+import string
+import nltk 
+import matplotlib
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+#nltk.download('punkt')
+#nltk.download('stopwords')
+#nltk.download('vader_lexicon')
+from nltk.corpus import stopwords
+en_stopwords = set(stopwords.words('english')) 
+import pandas as pd
+from collections import Counter
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt 
+```
+
+
+### Step 2: Read in the necessary files and preprocess them
+In this part, I parsed the lyrics using various python nltk methods all of which are commented in the code. The result was a dataframe on which analysis can be performed
+
+```{python include=FALSE}
+#read in the data into a dataframe
+lyrics = pd.read_csv("data/lyrics.csv")
+
+#Helper function to help clean the data
+def preprocess(v):
+    
+    #tokenize the sentences
+    x = nltk.word_tokenize(v)
+    
+    #remove punctuation
+    x = [word for word in x if word not in string.punctuation]
+    
+    #remove stopwords
+    x = [word.lower() for word in x if word not in  en_stopwords]
+    
+    return x
+
+#get the sentiment score for each song based on the sentences in the song and add a column with
+sid = SentimentIntensityAnalyzer()
+def get_sentiments(v):
+    
+    #get the sentences in the song
+    x = nltk.sent_tokenize(v)
+    
+    #get the seniment score for the each sentence and track the max and the min
+    max_sent = -float('inf')
+    min_sent = float('inf')
+    
+    for sentence in x:
+        score = sid.polarity_scores(sentence)['compound']
+        max_sent = score if score > max_sent else max_sent
+        min_sent = score if score < min_sent else min_sent
+        
+#get the sentiment scores for each song
+lyrics = pd.concat([lyrics, lyrics['lyrics'].apply(get_sentiments)], axis = 1)
+#get the cleaned words from the song lyrics
+lyrics['lyrics'] = lyrics['lyrics'].apply(preprocess)
+
+#remove the dates ifrom lyrics file that were incorrect
+lyrics.year = lyrics.year.replace({702: 1998, 112:2002})
+lyrics['year'] = pd.to_datetime(lyrics['year'], format = "%Y")
+
+```
+
+```{python}
+#store the processed file as a csv
+lyrics.to_csv('output/lyrics_processed.csv',index=False)
+```
+
+### Step 3: What words are associated with each genre of music
+I wanted to see whether the most frequent words in a genre would allow us to establish what song is the most emotive.
+
+Below are some word clouds for a select set of genres (Pop, Metal and R&B)
+
+```{python include=FALSE}
+#step 1 is to subdivide lyrics by genre
+Folk = lyrics[(lyrics.genre == 'Folk')]
+Jazz = lyrics[(lyrics.genre == 'Jazz')]
+Hip_Hop = lyrics[(lyrics.genre == 'Hip-Hop')]
+R_n_B = lyrics[(lyrics.genre == 'R&B')]
+Pop = lyrics[(lyrics.genre == 'Pop')]
+Metal = lyrics[(lyrics.genre == 'Metal')]
+
+```
+
+```{python echo=FALSE}
+#step 2 is to generate a wordcloud for each genre given the lyrics and display output (needs new cell per )
+my_list = Pop['lyrics'].sum()
+word_could_dict=Counter(my_list)
+wordcloud = WordCloud(max_font_size=100, max_words=50, background_color="white").generate_from_frequencies(word_could_dict)
+plt.figure()
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.show()
+
+```
+
+#### Step 4: Basic sentiment analysis
+##### Happiness Score:
+I decided to delve further into this theme of emotiveness to see which genres can be considered having the most happy lines and which ones are less happy
+
+This was done by getting the max polarity score(score of how positive or negative a statement is) per song and just averaging those per genre. The graphs below show both the max polarity of the song by genre and the min polarity over the years
+```{python}
+
+```
+
+
+#Step 5: Check the trend in the happiness levels of the songs over the years
+#Trend in the happiness levels of songs based in year released
+I wanted to see have some genres become more happy over the years while others became more grim? Below is some of the output
+
+```{python}
+genres = lyrics['genre'].drop_duplicates().tolist()
+genres = [genre for genre in genres if not (genre =='Not Available' or genre =='Other') ]
+for genre in genres: 
+    ax = lyrics[(lyrics.genre == genre)][['year', 'min_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(cmap = 'winter')
+    lyrics[(lyrics.genre == genre)][['year', 'max_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(grid = True, figsize = (15,5), color = 'orange', ax =ax, title = "{} happiest line score vs saddest ".format(genre) )
+```
+
+#Final Determination
+- Most emotive genre, best to listen to when ....
+- ...
+
+
+
