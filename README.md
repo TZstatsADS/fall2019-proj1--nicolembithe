@@ -1,11 +1,10 @@
 # Applied Data Science @ Columbia
-## Fall 2019
-## Project 1: A "data story" on the songs of our times
+### Project 1: A "data story" on the songs of our times
 
 <img src="figs/emotive.png" width="100">
 
 
-Term: Fall 2019
+# Term: Fall 2019
 
 + Project title: Most emotive music genres 
 + This project is conducted by Nicole Mbithe
