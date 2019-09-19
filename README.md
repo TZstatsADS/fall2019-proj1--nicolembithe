@@ -12,7 +12,8 @@ Term: Fall 2019
 
 + Project summary: I decided to delve into the theme of emotiveness in music to see which genres can be considered having the most happy lines as well as the most grim lines. I also checked which songs have the largest range of sentiment, i.e they have a huge difference between the saddest and happiest lines. Basically the ones that are bound to take you on an emotional rollercoaster
 
-Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
+
+ This folder is orgarnized as follows.
 
 ```
 proj/
