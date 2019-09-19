@@ -1,7 +1,9 @@
 ---
 title: "Choosing a genre to listen to based on their emotiveness"
-author: Nicole Mbithe, ncm2144
-output: html_notebook
+author: "Nicole Mbithe, ncm2144"
+output:
+  html_document:
+    df_print: paged
 ---
 
 ## Why this topic
@@ -9,18 +11,24 @@ I have recentely been experiencing an array of emotions due to school starting, 
 
 I wanted to see if there is a way to determine which genre of songs will keep me at a constant mood(whether happy or sad) and which songs will take me on even more of an emotional rollercoaster. 
 
-###  Step 1: Loading all the necessary files to create Data Story
+###  Step 1: Loading all the necessary library files to create Data Story
 
-This notebook runs R in python using reticulate, so we need to install reticulate first. Then we install all the necessary python packages for the assignment
-```{r echo=TRUE}
+This notebook runs R in python using reticulate, so we need to install reticulate first. Then we install all the necessary python packages for the assignment. The code has been ommitted for the sake of presentation
+The packages used were:
+* nltk(Python NLP library)
+* pandas
+* wordcloud
+* matplotlib
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
 #install necessary packages for report
+install.packages("devtools", repos = "http://cran.us.r-project.org")
+devtools::install_github("rstudio/reticulate")
 library(reticulate)
 py_install("nltk")
 py_install("pandas")
 py_install("wordcloud")
 ```
-
-Note: the other installations are not shown on this page
 ```{python include=FALSE}
 #import all python libraries used in report
 import string
@@ -31,7 +39,7 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 #nltk.download('stopwords')
 #nltk.download('vader_lexicon')
 from nltk.corpus import stopwords
-en_stopwords = set(stopwords.words('english')) 
+en_stopwords = set(stopwords.words('english')) | set(['\'re', 'n\'t','\'ll', '\'ve', '\'m', 'i', '\'s'])
 import pandas as pd
 from collections import Counter
 from wordcloud import WordCloud
@@ -39,8 +47,13 @@ import matplotlib.pyplot as plt
 ```
 
 
-### Step 2: Read in the necessary files and preprocess them
+### Step 2: Read in the data preprocess them
 In this part, I parsed the lyrics using various python nltk methods all of which are commented in the code. The result was a dataframe on which analysis can be performed
+
+##### Preprocessing steps:
+- tokenization using word_tokenize
+- removing stopwords
+- changing tokens to lowercase
 
 ```{python include=FALSE}
 #read in the data into a dataframe
@@ -75,9 +88,11 @@ def get_sentiments(v):
         score = sid.polarity_scores(sentence)['compound']
         max_sent = score if score > max_sent else max_sent
         min_sent = score if score < min_sent else min_sent
-        
+    return pd.Series([max_sent, min_sent], index=['max_sent', 'min_sent'])
+    
 #get the sentiment scores for each song
 lyrics = pd.concat([lyrics, lyrics['lyrics'].apply(get_sentiments)], axis = 1)
+
 #get the cleaned words from the song lyrics
 lyrics['lyrics'] = lyrics['lyrics'].apply(preprocess)
 
@@ -87,64 +102,132 @@ lyrics['year'] = pd.to_datetime(lyrics['year'], format = "%Y")
 
 ```
 
-```{python}
-#store the processed file as a csv
-lyrics.to_csv('output/lyrics_processed.csv',index=False)
-```
-
 ### Step 3: What words are associated with each genre of music
 I wanted to see whether the most frequent words in a genre would allow us to establish what song is the most emotive.
 
-Below are some word clouds for a select set of genres (Pop, Metal and R&B)
+##### Word cloud for Jazz music
 
 ```{python include=FALSE}
 #step 1 is to subdivide lyrics by genre
 Folk = lyrics[(lyrics.genre == 'Folk')]
-Jazz = lyrics[(lyrics.genre == 'Jazz')]
-Hip_Hop = lyrics[(lyrics.genre == 'Hip-Hop')]
-R_n_B = lyrics[(lyrics.genre == 'R&B')]
-Pop = lyrics[(lyrics.genre == 'Pop')]
-Metal = lyrics[(lyrics.genre == 'Metal')]
+Folk.rename(columns={'max_sent':'Folk Score'}, inplace=True)
 
+Jazz = lyrics[(lyrics.genre == 'Jazz')]
+Jazz.rename(columns={'max_sent':'Jazz Score'}, inplace=True)
+
+Hip_Hop = lyrics[(lyrics.genre == 'Hip-Hop')]
+Hip_Hop.rename(columns={'max_sent':'Hip-Hop Score'}, inplace=True)
+
+R_n_B = lyrics[(lyrics.genre == 'R&B')]
+R_n_B.rename(columns={'max_sent':'R&B Score'}, inplace=True)
+
+Pop = lyrics[(lyrics.genre == 'Pop')]
+Pop.rename(columns={'max_sent':'Pop Score'}, inplace=True)
+
+Metal = lyrics[(lyrics.genre == 'Metal')]
+Metal.rename(columns={'max_sent':'Metal Score'}, inplace=True)
+
+Rock = lyrics[(lyrics.genre == 'Rock')]
+Rock.rename(columns={'max_sent':'Rock Score'}, inplace=True)
 ```
+
+
 
 ```{python echo=FALSE}
 #step 2 is to generate a wordcloud for each genre given the lyrics and display output (needs new cell per )
-my_list = Pop['lyrics'].sum()
+my_list = Jazz['lyrics'][:100].sum()
 word_could_dict=Counter(my_list)
-wordcloud = WordCloud(max_font_size=100, max_words=50, background_color="white").generate_from_frequencies(word_could_dict)
-plt.figure()
+wordcloud = WordCloud(max_font_size=100, max_words=100, background_color="white").generate_from_frequencies(word_could_dict)
+plt.figure(figsize=(20,10))
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.show()
+
+```
+##### Word cloud for Pop music
+```{python echo=FALSE}
+my_list = Pop['lyrics'][:100].sum()
+word_could_dict=Counter(my_list)
+wordcloud = WordCloud(max_font_size=100, max_words=100, background_color="white").generate_from_frequencies(word_could_dict)
+plt.figure(figsize=(20,10))
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.show()
+```
+
+##### Word cloud for Hip-Hop
+```{python echo=FALSE}
+#step 2 is to generate a wordcloud for each genre given the lyrics and display output (needs new cell per )
+my_list = Hip_Hop['lyrics'][:100].sum()
+word_could_dict=Counter(my_list)
+wordcloud = WordCloud(max_font_size=100, max_words=100, background_color="white").generate_from_frequencies(word_could_dict)
+plt.figure(figsize=(20,10))
 plt.imshow(wordcloud, interpolation="bilinear")
 plt.axis("off")
 plt.show()
 
 ```
 
-#### Step 4: Basic sentiment analysis
-##### Happiness Score:
-I decided to delve further into this theme of emotiveness to see which genres can be considered having the most happy lines and which ones are less happy
+### Step 4: Check the trend in the happiness levels of the songs over the years
 
-This was done by getting the max polarity score(score of how positive or negative a statement is) per song and just averaging those per genre. The graphs below show both the max polarity of the song by genre and the min polarity over the years
-```{python}
+Because the wordclouds are ovwerwhelmed by the most frequant song words like "love", I decided to use sentiment analysis to determine the positivity or negativity of a song.
 
+I also wanted to take time into account and answer the question: have some genres become more happy over the years while others became more grim? Below is some of the output.All the songs maximum happiness has been plotted on the same graph
+
+The Scores shown were obtained by: getting the max polarity score(swhat is the highest score gitten by a line in the song) per song and just averaging those per genre. 
+
+```{python echo=FALSE}
+ax = Folk[['year', 'Folk Score']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(color = 'green')
+ax = Metal[['year', 'Metal Score']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(ax = ax, color = 'gray')
+ax = Pop[['year', 'Pop Score']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(ax = ax, color = 'orange')
+ax = Jazz[['year', 'Jazz Score']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(ax = ax, color = 'blue')
+Hip_Hop[['year', 'Hip-Hop Score']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(ax = ax, color = 'red', figsize = (15,7), grid = True, title = "Comparison of trend average genre happiness score" )
 ```
 
+#### Observations
 
-#Step 5: Check the trend in the happiness levels of the songs over the years
-#Trend in the happiness levels of songs based in year released
-I wanted to see have some genres become more happy over the years while others became more grim? Below is some of the output
+* We see that Metal music is overall negative in comparision to other genres. But Metal now is more neutral than dark
+* Most other genres seem to remain at the same maximum happiness level.
+* There are less fluctuations in average happiness per genre from the beginning of the 21st century
 
-```{python}
+This doesn't really tell you what to listen to based on your mood because they have relatively similar positivity levels
+
+### Step 5: Check the difference between the maximum and minimum happiness in different genres over the years
+So I decided to delve further into this theme of emotiveness to see which genres can be considered as having the largest range of emotions expressed. The graphs below show both the max polarity of the song by genre and the min polarity over the years for a couple of genres. 
+
+The bigger the difference, the larger the range of emotions a song's lines display(large difference between most happy line and most sad line)
+
+
+```{python include=FALSE}
 genres = lyrics['genre'].drop_duplicates().tolist()
-genres = [genre for genre in genres if not (genre =='Not Available' or genre =='Other') ]
-for genre in genres: 
-    ax = lyrics[(lyrics.genre == genre)][['year', 'min_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(cmap = 'winter')
-    lyrics[(lyrics.genre == genre)][['year', 'max_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(grid = True, figsize = (15,5), color = 'orange', ax =ax, title = "{} happiest line score vs saddest ".format(genre) )
 ```
 
-#Final Determination
-- Most emotive genre, best to listen to when ....
-- ...
+```{python echo=FALSE}
+ax = lyrics[(lyrics.genre == genres[0])][['year', 'min_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(cmap = 'winter')
+lyrics[(lyrics.genre == genres[0])][['year', 'max_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(grid = True, figsize = (15,5), color = 'orange', ax =ax, title = "{} happiest line score vs saddest ".format(genres[0]) )
+```
+```{python echo=FALSE}
+ax = lyrics[(lyrics.genre == genres[2])][['year', 'min_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(cmap = 'winter')
+lyrics[(lyrics.genre == genres[2])][['year', 'max_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(grid = True, figsize = (15,5), color = 'orange', ax =ax, title = "{} happiest line score vs saddest ".format(genres[2]) )
+```
+```{python echo=FALSE}
+ax = lyrics[(lyrics.genre == genres[3])][['year', 'min_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(cmap = 'winter')
+lyrics[(lyrics.genre == genres[3])][['year', 'max_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(grid = True, figsize = (15,5), color = 'orange', ax =ax, title = "{} happiest line score vs saddest ".format(genres[3]) )
+```
+```{python echo=FALSE}
+ax = lyrics[(lyrics.genre == genres[-2])][['year', 'min_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(cmap = 'winter')
+lyrics[(lyrics.genre == genres[-2])][['year', 'max_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(grid = True, figsize = (15,5), color = 'orange', ax =ax, title = "{} happiest line score vs saddest ".format(genres[-2]) )
+```
+```{python echo=FALSE}
+ax = lyrics[(lyrics.genre == genres[-3])][['year', 'min_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(cmap = 'winter')
+lyrics[(lyrics.genre == genres[-3])][['year', 'max_sent']].set_index('year').resample('Y').mean().interpolate(method = 'linear').plot(grid = True, figsize = (15,5), color = 'orange', ax =ax, title = "{} happiest line score vs saddest ".format(genres[-3]) )
+```
 
+## Other fun observations from above:
 
+All genres seemed to take a dip in terms of their happiness score at the turn of the millenium. This would be an interesting angle to investigate given other data like economic data and news data.But after 2000 most songs seem to have constant levels of happiness scores 
 
+## Final Determination
+We see especially from the last set of graphs that the most emotive genre is **Hip-Hop**. You should listen to this when you are not feeling too many emotions at once so that the songs don't take you on a ride. 
+
+If however, you are experiencing a range of emotions at once and you want something consistent, the data recommends listening to  **R&B**. I know right! Surprising! But I didn't say quiet, I just said least range of emotions. The song will either be really sad or really happy. 

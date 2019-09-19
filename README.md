@@ -10,10 +10,10 @@ Term: Fall 2019
 + Project title: Most emotive music genres 
 + This project is conducted by Nicole Mbithe
 
-+ Project summary: I decided to delve into the theme of emotiveness in music to see which genres can be considered having the most happy lines as well as the most grim lines. I also checked which songs have the largest range of sentiment, i.e they have a huge difference between the saddest and happiest lines. Basically the ones that are bound to take you on an emotional rollercoaster
++ Project summary: Recommending songs to listen to based on different moods. I decided to delve into the theme of emotiveness in music to see which genres can be considered having the most happy lines as well as the most grim lines. I also checked which songs have the largest range of sentiment, i.e they have a huge difference between the saddest and happiest lines. Basically the ones that are bound to take you on an emotional rollercoaster
 
 
- This folder is orgarnized as follows.
+ This folder is orgarnized as follows:
 
 ```
 proj/
@@ -23,4 +23,4 @@ proj/
 ├── figs/
 └── output/
 ```
-The final notebook is stored in the root folder as well since it needs to read from and write to the different folders
+The final notebook as well as the html file it generates are is stored here in the root folder since the notebook reads from the subfolders.
