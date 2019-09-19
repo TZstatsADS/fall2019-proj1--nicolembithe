@@ -2,7 +2,7 @@
 ## Fall 2019
 ## Project 1: A "data story" on the songs of our times
 
-<img src="figs/emotive.png" width="500">
+<img src="figs/emotive.png" width="100">
 
 
 Term: Fall 2019
